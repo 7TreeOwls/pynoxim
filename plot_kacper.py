@@ -1,6 +1,8 @@
 from matplotlib import pyplot as plt
+
 import numpy as np
 from datetime import datetime
+from typing import List
 
 ANNOTATION_MARKER=['o','+','s','d','^','*','x','<']
 ANNOTATION_LINE=['-','--','.-',':']
@@ -33,29 +35,32 @@ def find_rows_of_results(results,parameter_index, parameter_value):
 def get_nowtime():
     return '{:%Y%m%d_%H%M%S_}'.format(datetime.today())
 
-def injection_throughput_plot(path: str, ms: int):
+def injection_throughput_plot(path: str, x_labels: List, y_labels: List, ms: int):
     #Virtual Channels plotting
     data_noxim = np.genfromtxt(csv_name, delimiter=',')
-    for y_label in ["global_average_delay", "max_delay"]:
-        f=plt.figure()
-        ax=f.add_subplot(111)
-        ax.plot(data_noxim[:,NAME_TO_IX["injection_load"]],
-                data_noxim[:,NAME_TO_IX[y_label]],
-                'o', 
-                markersize=ms, 
-                fillstyle='none')
+    for y_label in y_labels:
+        for x_label in x_labels:
+            f=plt.figure()
+            ax=f.add_subplot(111)
+            ax.plot(data_noxim[:,NAME_TO_IX[x_label[0]]],
+                    data_noxim[:,NAME_TO_IX[y_label[0]]],
+                    'o', 
+                    markersize=ms, 
+                    fillstyle='none')
 
+            ax.set_ylabel(y_label[0] + y_label[1])
+            ax.set_xlabel(x_label[0] + x_label[1])
+            ax.set_title(y_label[0] + " vs " + x_label[0]  + " plot")
+            ax.grid(True)
+            f.savefig(x_label[0] + "_" + y_label[0] + '.png')
+            plt.clf()
 
-        x_label = 'Injection Load (flits/cycle/IP)'
-        ax.set_ylabel(y_label + " (Cycles)")
-        ax.set_xlabel(x_label)
-        ax.set_title("Injection Load vs " + y_label + " plot")
-        ax.grid(True)
-        f.savefig("injection_load_" + y_label + '.png')
-        plt.clf()
 
 if __name__=="__main__":
-    ms=10
+    ms=7
     csv_name = "20200406_194649_results.csv"
     
-    injection_throughput_plot(csv_name, ms)
+    injection_throughput_plot(csv_name, 
+                             [["injection_load", " (filt/IP/Cycles)"]],
+                             [["global_average_delay", " (Cycles)"], ["max_delay", " (Cycles)"]], 
+                             ms)
