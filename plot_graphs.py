@@ -9,7 +9,7 @@ def get_nowtime():
     return '{:%Y%m%d_%H%M%S_}'.format(datetime.today())
 
 
-
+csv_name = "20200406_184008_results.csv"
 ms=10
 ANNOTATION_MARKER=['o','+','s','d','^','*','x','<']
 ANNOTATION_LINE=['-','--','.-',':']
@@ -239,10 +239,10 @@ f3.savefig(get_nowtime()+'f3.png')
 '''
 
 #Virtual Channels plotting
-a = np.genfromtxt('20181214_220652_results.csv', delimiter=',')
+a = np.genfromtxt(csv_name, delimiter=',')
 b=find_rows_of_results(a,3,2)
 
-f=plt.figure();
+f=plt.figure()
 ax=f.add_subplot(111)
 ax.plot(b[:,1],b[:,13],'-ro', markersize=ms, fillstyle='none')
 

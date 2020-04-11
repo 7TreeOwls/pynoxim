@@ -38,7 +38,12 @@ class Pynoxim:
             except:
                 print("Noxim not found.\nPlease compile noxim and provide the correct noxim binary path.")
 
-    def create_noxim_YAML_config(self, dim_x=4,dim_y=4,use_winoc=False,injection_rate=0.01,RA_index=0,num_virtual_channels=4, size_of_packet_in_bits=2048, size_of_flit=32):
+    def create_noxim_YAML_config(self, dim_x=4, dim_y=4,
+                                 use_winoc=False, injection_rate=0.01,
+                                 RA_index=0, num_virtual_channels=4, 
+                                 size_of_packet_in_bits=2048, 
+                                 size_of_flit=32,
+                                 traffic="TRAFFIC_RANDOM"):
         YAMLConfig='''
 # NOC & WIRED CONFIGURATION
 #
@@ -183,7 +188,7 @@ probability_of_retransmission: 0.01
 #   TRAFFIC_BIT_REVERSAL
 #   TRAFFIC_SHUFFLE
 #   TRAFFIC_BUTTERFLY
-traffic_distribution: TRAFFIC_RANDOM
+traffic_distribution: '''+traffic+'''
 # when traffic table based is specified, use the following
 # configuration file
 traffic_table_filename: "t.txt" '''
@@ -224,7 +229,7 @@ traffic_table_filename: "t.txt" '''
             if self.noxim_log_path!='':
                 self.delete_log_file(self.noxim_log_path)
                 with open(self.noxim_log_path,'a') as logFile:
-                    print(log_me,file=logFile)
+                    print(log_me, file=logFile)
 
     def delete_log_file(self,log_file_name):
         temp_log_file_path=Path(log_file_name)
@@ -406,28 +411,36 @@ global_average_delay, max_delay, network_throughput, average_IP_throughput, tota
         return results_matrix
 
 
-    def compare_config_pynoxim(self,injection_load_range,mesh_dim_range,virtual_channel_range,routing_algorithm_indices_in_list,use_winoc=False, flit_size_range=[32],size_of_packet_in_bits=2048):
+    def compare_config_pynoxim(self,injection_load_range,
+                              mesh_dim_range,
+                              virtual_channel_range,
+                              routing_algorithm_indices_in_list,
+                              use_winoc=False, 
+                              flit_size_range=[32],
+                              size_of_packet_in_bits=2048,
+                              traffic_list=["TRAFFIC_RANDOM"]):
         results=[]
         for core_it in mesh_dim_range:
             for i in injection_load_range:
                 for RA_index in routing_algorithm_indices_in_list:
                     for VC_index in virtual_channel_range:
                         for size_of_flit in flit_size_range:
-                            self.noxim_log('=================================================\
-                            \nRunning Noxim for \nmesh of '+str(core_it)+'x'+str(core_it)+' with \nInjection Load of '+'{:.8G}'.format(i)+' with \nRouting Algorithm '+self.get_routing_algorithm(RA_index)+ '\nNumber of Virtual Channels '+str(VC_index)+ '\nSize of flit (in bits): '+str(size_of_flit)+ '\nSize of Packet (in bits): '+str(size_of_packet_in_bits)+'\nat '+str(datetime.now()),print_log=True,save_log=True)
+                            for traffic in traffic_list:
+                                self.noxim_log('=================================================\
+                                \nRunning Noxim for \nmesh of '+str(core_it)+'x'+str(core_it)+' with \nInjection Load of '+'{:.8G}'.format(i)+' with \nRouting Algorithm '+self.get_routing_algorithm(RA_index)+ '\nNumber of Virtual Channels '+str(VC_index)+ '\nSize of flit (in bits): '+str(size_of_flit)+ '\nSize of Packet (in bits): '+str(size_of_packet_in_bits)+'\nat '+str(datetime.now()) + '\nTraffic: ' + traffic ,print_log=True,save_log=True)
 
-                            self.create_noxim_YAML_config(core_it,core_it,use_winoc,i,RA_index=RA_index, num_virtual_channels=VC_index, size_of_flit=size_of_flit, size_of_packet_in_bits=size_of_packet_in_bits)
+                                self.create_noxim_YAML_config(core_it,core_it,use_winoc,i,RA_index=RA_index, num_virtual_channels=VC_index, size_of_flit=size_of_flit, size_of_packet_in_bits=size_of_packet_in_bits, traffic=traffic)
 
-                            # Runs the shell command for noxim
-                            returnedVal=self.run()
+                                # Runs the shell command for noxim
+                                returnedVal=self.run()
 
-                            # log returned output from noxim
-                            #print(returnedVal)
-                            self.noxim_log(returnedVal,save_log=True)
+                                # log returned output from noxim
+                                #print(returnedVal)
+                                self.noxim_log(returnedVal,save_log=True)
 
-                            result=self.get_results(returnedVal)
-                            results.append([core_it,i,RA_index,VC_index,size_of_flit,size_of_packet_in_bits]+result)
-                            self.print_result_list(result)
+                                result=self.get_results(returnedVal)
+                                results.append([core_it,i,RA_index,VC_index,size_of_flit,size_of_packet_in_bits]+result)
+                                self.print_result_list(result)
 
         results_matrix=np.row_stack(results)
         #save_results(results_matrix,'mesh_dimension,injection_load,throughput,delay')
@@ -441,17 +454,15 @@ global_average_delay, max_delay, network_throughput, average_IP_throughput, tota
         return results[np.where(results[:,parameter_index]==parameter_value)[0],:]
 
 
-'''
-
-
-
-
-'''
-
 if __name__=='__main__':
-    pn=Pynoxim('~/noxim/noxim/bin',display=False)
-    a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,0.3,0.05),mesh_dim_range=[8],virtual_channel_range=[2,4,6,8],\
-        routing_algorithm_indices_in_list=[0],use_winoc=False, flit_size_range=[32])
+    pn=Pynoxim('/home/kacper/noxim/noxim/bin', display=False)
+    a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,1,0.01),
+                                mesh_dim_range=[8],
+                                virtual_channel_range=[4],
+                                routing_algorithm_indices_in_list=[0],
+                                use_winoc=False, 
+                                flit_size_range=[32],
+                                traffic_list=['TRAFFIC_RANDOM'])
     #a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,0.3,0.05),mesh_dim_range=[4,6,8,10],virtual_channel_range=[4],\
     #    routing_algorithm_indices_in_list=[0],use_winoc=False, flit_size_range=[32])
     #a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,0.3,0.05),mesh_dim_range=[8],virtual_channel_range=[4],\
