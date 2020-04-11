@@ -47,8 +47,9 @@ def injection_throughput_plot(path: str, ms: int):
 
 
         x_label = 'Injection Load (flits/cycle/IP)'
-        ax.set_ylabel(y_label)
+        ax.set_ylabel(y_label + " (Cycles)")
         ax.set_xlabel(x_label)
+        ax.set_title("Injection Load vs " + y_label + " plot")
         ax.grid(True)
         f.savefig("injection_load_" + y_label + '.png')
         plt.clf()
