@@ -35,7 +35,7 @@ def find_rows_of_results(results,parameter_index, parameter_value):
 def get_nowtime():
     return '{:%Y%m%d_%H%M%S_}'.format(datetime.today())
 
-def injection_throughput_plot(path: str, x_labels: List, y_labels: List, ms: int):
+def plot(path: str, x_labels: List, y_labels: List, ms: int):
     #Virtual Channels plotting
     data_noxim = np.genfromtxt(csv_name, delimiter=',')
     for y_label in y_labels:
@@ -60,7 +60,14 @@ if __name__=="__main__":
     ms=7
     csv_name = "20200406_194649_results.csv"
     
-    injection_throughput_plot(csv_name, 
-                             [["injection_load", " (filt/IP/Cycles)"]],
-                             [["global_average_delay", " (Cycles)"], ["max_delay", " (Cycles)"]], 
-                             ms)
+    # Delay vs Injection load
+    plot(csv_name, 
+        [["injection_load", " (filt/IP/Cycles)"]],
+        [["global_average_delay", " (Cycles)"], ["max_delay", " (Cycles)"]], 
+        ms)
+
+    # Global Througput vs Injection Load
+    plot(csv_name, 
+        [["injection_load", " (filt/IP/Cycles)"]],
+        [["network_throughput", " "], ["average_IP_throughput", " "]], 
+        ms)
