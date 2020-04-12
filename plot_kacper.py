@@ -55,6 +55,41 @@ def plot(path: str, x_labels: List, y_labels: List, ms: int):
             f.savefig(x_label[0] + "_" + y_label[0] + '.png')
             plt.clf()
 
+def plot_energy(path: str, ms: int):
+    #Virtual Channels plotting
+    data_noxim = np.genfromtxt(csv_name, delimiter=',')
+    f=plt.figure()
+    ax=f.add_subplot(111)
+    ax.plot(data_noxim[:,NAME_TO_IX["injection_load"]],
+            data_noxim[:,NAME_TO_IX["total_energy"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color='green',
+            label='total energy')
+    ax.plot(data_noxim[:,NAME_TO_IX["injection_load"]],
+            data_noxim[:,NAME_TO_IX["static_energy"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color='blue',
+            label='static energy')    
+    ax.plot(data_noxim[:,NAME_TO_IX["injection_load"]],
+            data_noxim[:,NAME_TO_IX["dynamic_energy"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color='red',
+            label='dynamic energy')  
+    ax.legend()
+    ax.set_ylabel(" (filt/IP/Cycles)")
+    ax.set_xlabel("Injection Load (filt/IP/Cycles)")
+    ax.set_title("Injection load vs Energy plot")
+    ax.grid(True)
+    f.savefig("injection_load_energy.png")
+    plt.clf()
+
+
 
 if __name__=="__main__":
     ms=7
@@ -69,5 +104,7 @@ if __name__=="__main__":
     # Global Througput vs Injection Load
     plot(csv_name, 
         [["injection_load", " (filt/IP/Cycles)"]],
-        [["network_throughput", " "], ["average_IP_throughput", " "]], 
+        [["network_throughput", " (flits/cycle)"], ["average_IP_throughput", " (flits/cycle/IP)"]], 
         ms)
+
+    plot_energy(csv_name, ms)

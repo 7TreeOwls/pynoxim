@@ -456,13 +456,21 @@ global_average_delay, max_delay, network_throughput, average_IP_throughput, tota
 
 if __name__=='__main__':
     pn=Pynoxim('/home/kacper/noxim/noxim/bin', display=False)
+    """ 
     a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,1,0.01),
                                 mesh_dim_range=[8],
                                 virtual_channel_range=[4],
                                 routing_algorithm_indices_in_list=[0],
                                 use_winoc=False, 
                                 flit_size_range=[32],
-                                traffic_list=['TRAFFIC_RANDOM'])
+                                traffic_list=['TRAFFIC_RANDOM'])"""
+    a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,1,0.01),
+                            mesh_dim_range=[8],
+                            virtual_channel_range=[4],
+                            routing_algorithm_indices_in_list=[0],
+                            use_winoc=False, 
+                            flit_size_range=[32],
+                            traffic_list=['TRAFFIC_HOTSPOT'])
     #a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,0.3,0.05),mesh_dim_range=[4,6,8,10],virtual_channel_range=[4],\
     #    routing_algorithm_indices_in_list=[0],use_winoc=False, flit_size_range=[32])
     #a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,0.3,0.05),mesh_dim_range=[8],virtual_channel_range=[4],\
