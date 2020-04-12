@@ -321,6 +321,15 @@ Static Energy: {} J
         returnedVal=subprocess.check_output(self.noxim_bin_path+'/noxim'+' -config '+self.noxim_YAML_config_path+' -power '+self.noxim_bin_path+'/power.yaml',shell=True,stderr=subprocess.STDOUT)
         return returnedVal.decode('utf-8')
 
+    def run_hotspot(self):
+        # Runs the shell command for noxim for the hotspot traffic
+        hotspot_args = ""
+        for i in range(8):
+            hotspot_args += f"-hs {i} 0.05 "
+        print(hotspot_args)
+        returnedVal=subprocess.check_output(self.noxim_bin_path+'/noxim'+' -config '+self.noxim_YAML_config_path+' -power '+self.noxim_bin_path+'/power.yaml '+ hotspot_args,shell=True,stderr=subprocess.STDOUT)
+        return returnedVal.decode('utf-8')
+
     def compare_config_injection_load(self,injection_load_range,mesh_dim_range,use_winoc=False):
         results=[]
         for core_it in mesh_dim_range:
@@ -418,29 +427,29 @@ global_average_delay, max_delay, network_throughput, average_IP_throughput, tota
                               use_winoc=False, 
                               flit_size_range=[32],
                               size_of_packet_in_bits=2048,
-                              traffic_list=["TRAFFIC_RANDOM"]):
+                              traffic="RANDOM"):
         results=[]
         for core_it in mesh_dim_range:
             for i in injection_load_range:
                 for RA_index in routing_algorithm_indices_in_list:
                     for VC_index in virtual_channel_range:
                         for size_of_flit in flit_size_range:
-                            for traffic in traffic_list:
-                                self.noxim_log('=================================================\
-                                \nRunning Noxim for \nmesh of '+str(core_it)+'x'+str(core_it)+' with \nInjection Load of '+'{:.8G}'.format(i)+' with \nRouting Algorithm '+self.get_routing_algorithm(RA_index)+ '\nNumber of Virtual Channels '+str(VC_index)+ '\nSize of flit (in bits): '+str(size_of_flit)+ '\nSize of Packet (in bits): '+str(size_of_packet_in_bits)+'\nat '+str(datetime.now()) + '\nTraffic: ' + traffic ,print_log=True,save_log=True)
+                            self.noxim_log('=================================================\
+                            \nRunning Noxim for \nmesh of '+str(core_it)+'x'+str(core_it)+' with \nInjection Load of '+'{:.8G}'.format(i)+' with \nRouting Algorithm '+self.get_routing_algorithm(RA_index)+ '\nNumber of Virtual Channels '+str(VC_index)+ '\nSize of flit (in bits): '+str(size_of_flit)+ '\nSize of Packet (in bits): '+str(size_of_packet_in_bits)+'\nat '+str(datetime.now()) + '\nTraffic: ' + traffic ,print_log=True,save_log=True)
 
-                                self.create_noxim_YAML_config(core_it,core_it,use_winoc,i,RA_index=RA_index, num_virtual_channels=VC_index, size_of_flit=size_of_flit, size_of_packet_in_bits=size_of_packet_in_bits, traffic=traffic)
+                            self.create_noxim_YAML_config(core_it,core_it,use_winoc,i,RA_index=RA_index, num_virtual_channels=VC_index, size_of_flit=size_of_flit, size_of_packet_in_bits=size_of_packet_in_bits, traffic="TRAFFIC_RANDOM")
+                            # Runs the shell command for noxim
+                            if traffic == "HOTSPOT":
+                                returnedVal=self.run_hotspot()  
+                            else:
+                                returnedVal=self.run()  
+                            # log returned output from noxim
+                            #print(returnedVal)
+                            self.noxim_log(returnedVal,save_log=True)
 
-                                # Runs the shell command for noxim
-                                returnedVal=self.run()
-
-                                # log returned output from noxim
-                                #print(returnedVal)
-                                self.noxim_log(returnedVal,save_log=True)
-
-                                result=self.get_results(returnedVal)
-                                results.append([core_it,i,RA_index,VC_index,size_of_flit,size_of_packet_in_bits]+result)
-                                self.print_result_list(result)
+                            result=self.get_results(returnedVal)
+                            results.append([core_it,i,RA_index,VC_index,size_of_flit,size_of_packet_in_bits]+result)
+                            self.print_result_list(result)
 
         results_matrix=np.row_stack(results)
         #save_results(results_matrix,'mesh_dimension,injection_load,throughput,delay')
@@ -463,14 +472,14 @@ if __name__=='__main__':
                                 routing_algorithm_indices_in_list=[0],
                                 use_winoc=False, 
                                 flit_size_range=[32],
-                                traffic_list=['TRAFFIC_RANDOM'])"""
+                                traffic='TRAFFIC_RANDOM')"""
     a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,1,0.01),
                             mesh_dim_range=[8],
                             virtual_channel_range=[4],
                             routing_algorithm_indices_in_list=[0],
                             use_winoc=False, 
                             flit_size_range=[32],
-                            traffic_list=['TRAFFIC_HOTSPOT'])
+                            traffic="HOTSPOT")
     #a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,0.3,0.05),mesh_dim_range=[4,6,8,10],virtual_channel_range=[4],\
     #    routing_algorithm_indices_in_list=[0],use_winoc=False, flit_size_range=[32])
     #a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,0.3,0.05),mesh_dim_range=[8],virtual_channel_range=[4],\
