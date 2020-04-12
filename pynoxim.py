@@ -325,7 +325,7 @@ Static Energy: {} J
         # Runs the shell command for noxim for the hotspot traffic
         hotspot_args = ""
         for i in range(8):
-            hotspot_args += f"-hs {i} 0.05 "
+            hotspot_args += f"-hs {i} 0.075 "
         print(hotspot_args)
         returnedVal=subprocess.check_output(self.noxim_bin_path+'/noxim'+' -config '+self.noxim_YAML_config_path+' -power '+self.noxim_bin_path+'/power.yaml '+ hotspot_args,shell=True,stderr=subprocess.STDOUT)
         return returnedVal.decode('utf-8')

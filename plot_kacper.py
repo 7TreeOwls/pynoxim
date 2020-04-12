@@ -82,19 +82,118 @@ def plot_energy(path: str, ms: int):
             color='red',
             label='dynamic energy')  
     ax.legend()
-    ax.set_ylabel(" (filt/IP/Cycles)")
+    ax.set_ylabel("Energy (J)")
     ax.set_xlabel("Injection Load (filt/IP/Cycles)")
     ax.set_title("Injection load vs Energy plot")
     ax.grid(True)
     f.savefig("injection_load_energy.png")
     plt.clf()
 
+def plot_hotspots(path: List, ms: int):
+    #Virtual Channels plotting
+    data_noxim_05 = np.genfromtxt(path[0], delimiter=',')
+    data_noxim_15 = np.genfromtxt(path[1], delimiter=',')
+    data_noxim_25 = np.genfromtxt(path[2], delimiter=',')
+
+    f=plt.figure()
+    ax=f.add_subplot(111)
+    ax.plot(data_noxim_05[:,NAME_TO_IX["injection_load"]],
+            data_noxim_05[:,NAME_TO_IX["total_energy"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color='green',
+            label="Hotspot 5% traffic")
+    ax.plot(data_noxim_15[:,NAME_TO_IX["injection_load"]],
+            data_noxim_15[:,NAME_TO_IX["total_energy"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color="blue",
+            label="Hotspot 7.5% traffic")
+    ax.plot(data_noxim_25[:,NAME_TO_IX["injection_load"]],
+            data_noxim_25[:,NAME_TO_IX["total_energy"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color="red",
+            label="Hotspot 10% traffic")
+    ax.legend()
+    ax.set_ylabel("Total Energy (J)")
+    ax.set_xlabel("Injection Load (filt/IP/Cycles)")
+    ax.set_title("Injection load vs Total Energy (J)")
+    ax.grid(True)
+    f.savefig("injection_load_tot_energt_hotspots.png")
+    plt.clf()
+
+    f=plt.figure()
+    ax=f.add_subplot(111)
+    ax.plot(data_noxim_05[:,NAME_TO_IX["injection_load"]],
+            data_noxim_05[:,NAME_TO_IX["network_throughput"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color='green',
+            label="Hotspot 5% traffic")
+    ax.plot(data_noxim_15[:,NAME_TO_IX["injection_load"]],
+            data_noxim_15[:,NAME_TO_IX["network_throughput"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color="blue",
+            label="Hotspot 7.5% traffic")
+    ax.plot(data_noxim_25[:,NAME_TO_IX["injection_load"]],
+            data_noxim_25[:,NAME_TO_IX["network_throughput"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color="red",
+            label="Hotspot 10% traffic")
+    ax.legend()
+    ax.set_ylabel("Network throughput (flits/Cycle)")
+    ax.set_xlabel("Injection Load (filt/IP/Cycles)")
+    ax.set_title("Injection load vs Network throughput")
+    ax.grid(True)
+    f.savefig("injection_load_throughput_hotspots.png")
+    plt.clf()
+
+
+    f=plt.figure()
+    ax=f.add_subplot(111)
+    ax.plot(data_noxim_05[:,NAME_TO_IX["injection_load"]],
+            data_noxim_05[:,NAME_TO_IX["network_throughput"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color='green',
+            label="Hotspot 5% traffic")
+    ax.plot(data_noxim_15[:,NAME_TO_IX["injection_load"]],
+            data_noxim_15[:,NAME_TO_IX["network_throughput"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color="blue",
+            label="Hotspot 7.5% traffic")
+    ax.plot(data_noxim_25[:,NAME_TO_IX["injection_load"]],
+            data_noxim_25[:,NAME_TO_IX["network_throughput"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color="red",
+            label="Hotspot 10% traffic")
+    ax.legend()
+    ax.set_ylabel("Network throughput (flits/Cycle)")
+    ax.set_xlabel("Injection Load (filt/IP/Cycles)")
+    ax.set_title("Injection load vs Network throughput")
+    ax.grid(True)
+    f.savefig("injection_load_throughput_hotspots.png")
+    plt.clf()
 
 
 if __name__=="__main__":
-    ms=7
-    csv_name = "20200406_194649_results.csv"
-    
+    ms=6
+    csv_name = "injection_load_sweep.csv"
+    csv_name_hotspots = ["hotspot_0.05.csv",  "hotspot_0.075.csv",  "hotspot_0.1.csv"]
     # Delay vs Injection load
     plot(csv_name, 
         [["injection_load", " (filt/IP/Cycles)"]],
@@ -108,3 +207,5 @@ if __name__=="__main__":
         ms)
 
     plot_energy(csv_name, ms)
+
+    plot_hotspots(csv_name_hotspots, ms)
