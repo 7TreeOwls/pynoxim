@@ -287,9 +287,9 @@ def plot_buffer_sizes(csv_name, ms):
     data = np.genfromtxt(csv_name, delimiter=',')
     f=plt.figure()
     ax=f.add_subplot(111)
-    for i, RA in enumerate(RA_list):
+    for i, buffer_size in enumerate(buffer_sizes):
         # i is equivalent to the RA index
-        b = find_rows_of_results(data, , i)
+        b = find_rows_of_results(data, NAME_TO_IX["buffer_size"], buffer_size)
         ax.plot(
             b[:,NAME_TO_IX["injection_load"]],
             b[:,NAME_TO_IX["global_average_delay"]],
@@ -297,21 +297,21 @@ def plot_buffer_sizes(csv_name, ms):
             markersize=ms, 
             fillstyle='none',
             color=color_list[i],
-            label=RA
+            label=f"buffer_size_{buffer_size}"
             )
     ax.legend()
     ax.set_ylabel("Average Delay (Cycles)")
     ax.set_xlabel("Injection Load (filt/IP/Cycles)")
-    ax.set_title("Injection load vs Average Delay for different routing algorithms")
+    ax.set_title("Injection load vs Average Delay for different buffer sizes")
     ax.grid(True)
-    f.savefig("injection_load_delay_hotspots_ras.png")
+    f.savefig("injection_load_delay_hotspots_buffs.png")
     plt.clf()
 
     f=plt.figure()
     ax=f.add_subplot(111)
-    for i, RA in enumerate(RA_list):
+    for i, buffer_size in enumerate(buffer_sizes):
         # i is equivalent to the RA index
-        b = find_rows_of_results(data, NAME_TO_IX["ra_ix"], i)
+        b = find_rows_of_results(data, NAME_TO_IX["buffer_size"], buffer_size)
         ax.plot(
             b[:,NAME_TO_IX["injection_load"]],
             b[:,NAME_TO_IX["network_throughput"]],
@@ -319,21 +319,21 @@ def plot_buffer_sizes(csv_name, ms):
             markersize=ms, 
             fillstyle='none',
             color=color_list[i],
-            label=RA
+            label=f"buffer_size_{buffer_size}"
             )
     ax.legend()
     ax.set_ylabel("Network throughput (flits/Cycle)")
     ax.set_xlabel("Injection Load (filt/IP/Cycles)")
-    ax.set_title("Injection load vs Network throughput with different routing algorithms")  
+    ax.set_title("Injection load vs Network throughput with different buffer sizes")  
     ax.grid(True)
-    f.savefig("injection_load_throughput_hotspots_ras.png")
+    f.savefig("injection_load_throughput_hotspots_buffs.png")
     plt.clf()
 
     f=plt.figure()
     ax=f.add_subplot(111)
-    for i, RA in enumerate(RA_list):
+    for i, buffer_size in enumerate(buffer_sizes):
         # i is equivalent to the RA index
-        b = find_rows_of_results(data, NAME_TO_IX["ra_ix"], i)
+        b = find_rows_of_results(data, NAME_TO_IX["buffer_size"], buffer_size)
         ax.plot(
             b[:,NAME_TO_IX["injection_load"]],
             b[:,NAME_TO_IX["total_energy"]],
@@ -341,21 +341,20 @@ def plot_buffer_sizes(csv_name, ms):
             markersize=ms, 
             fillstyle='none',
             color=color_list[i],
-            label=RA
+            label=f"buffer_size_{buffer_size}"
             )
     ax.legend()
     ax.set_ylabel("Total Energy (J)")
     ax.set_xlabel("Injection Load (filt/IP/Cycles)")
-    ax.set_title("Injection load vs Total Energy with different routing algorithms")  
+    ax.set_title("Injection load vs Total Energy with different buffer sizes")  
     ax.grid(True)
-    f.savefig("injection_load_totenergy_hotspots_ras.png")
+    f.savefig("injection_load_totenergy_hotspots_buffs.png")
     plt.clf()
 
 if __name__=="__main__":
     ms=2
-    csv_name = "ra_sweep.csv"
-    plot_routing_algs(csv_name, ms)
-    plot_buffer_sizes(csv_name_buff, ms)
+    plot_routing_algs("ra_sweep.csv", ms)
+    plot_buffer_sizes("buff_sweep.csv", ms)
     buffer_sizes=[2, 4, 8, 16, 32, 64]
     # For Part B
 
