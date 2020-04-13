@@ -43,7 +43,8 @@ class Pynoxim:
                                  RA_index=0, num_virtual_channels=4, 
                                  size_of_packet_in_bits=2048, 
                                  size_of_flit=32,
-                                 traffic="TRAFFIC_RANDOM"):
+                                 traffic="TRAFFIC_RANDOM",
+                                 buffer_size=2):
         YAMLConfig='''
 # NOC & WIRED CONFIGURATION
 #
@@ -52,7 +53,7 @@ class Pynoxim:
 mesh_dim_x: '''+str(dim_x)+'''
 mesh_dim_y: '''+str(dim_y)+'''
 # number of flits for each router buffer
-buffer_depth: 2
+buffer_depth: '''+str(buffer_size)+'''
 # size of flits, in bits
 flit_size: '''+str(size_of_flit)+'''
 # lenght in mm of router to hub connection
@@ -325,7 +326,7 @@ Static Energy: {} J
         # Runs the shell command for noxim for the hotspot traffic
         hotspot_args = ""
         for i in range(8):
-            hotspot_args += f"-hs {i} 0.075 "
+            hotspot_args += f"-hs {i} 0.05 "
         print(hotspot_args)
         returnedVal=subprocess.check_output(self.noxim_bin_path+'/noxim'+' -config '+self.noxim_YAML_config_path+' -power '+self.noxim_bin_path+'/power.yaml '+ hotspot_args,shell=True,stderr=subprocess.STDOUT)
         return returnedVal.decode('utf-8')
@@ -427,34 +428,37 @@ global_average_delay, max_delay, network_throughput, average_IP_throughput, tota
                               use_winoc=False, 
                               flit_size_range=[32],
                               size_of_packet_in_bits=2048,
-                              traffic="RANDOM"):
+                              traffic="RANDOM",
+                              buffer_sizes=[2]):
         results=[]
+    
         for core_it in mesh_dim_range:
             for i in injection_load_range:
                 for RA_index in routing_algorithm_indices_in_list:
                     for VC_index in virtual_channel_range:
                         for size_of_flit in flit_size_range:
-                            self.noxim_log('=================================================\
-                            \nRunning Noxim for \nmesh of '+str(core_it)+'x'+str(core_it)+' with \nInjection Load of '+'{:.8G}'.format(i)+' with \nRouting Algorithm '+self.get_routing_algorithm(RA_index)+ '\nNumber of Virtual Channels '+str(VC_index)+ '\nSize of flit (in bits): '+str(size_of_flit)+ '\nSize of Packet (in bits): '+str(size_of_packet_in_bits)+'\nat '+str(datetime.now()) + '\nTraffic: ' + traffic ,print_log=True,save_log=True)
+                            for buffer_size in buffer_sizes:
+                                self.noxim_log('=================================================\
+                                \nRunning Noxim for \nmesh of '+str(core_it)+'x'+str(core_it)+' with \nInjection Load of '+'{:.8G}'.format(i)+' with \nRouting Algorithm '+self.get_routing_algorithm(RA_index)+ '\nNumber of Virtual Channels '+str(VC_index)+ '\nSize of flit (in bits): '+str(size_of_flit)+ '\nSize of Packet (in bits): '+str(size_of_packet_in_bits)+'\nat '+str(datetime.now()) + '\nTraffic: ' + traffic + '\nBuffer size: ' + str(buffer_size), print_log=True,save_log=True)
 
-                            self.create_noxim_YAML_config(core_it,core_it,use_winoc,i,RA_index=RA_index, num_virtual_channels=VC_index, size_of_flit=size_of_flit, size_of_packet_in_bits=size_of_packet_in_bits, traffic="TRAFFIC_RANDOM")
-                            # Runs the shell command for noxim
-                            if traffic == "HOTSPOT":
-                                returnedVal=self.run_hotspot()  
-                            else:
-                                returnedVal=self.run()  
-                            # log returned output from noxim
-                            #print(returnedVal)
-                            self.noxim_log(returnedVal,save_log=True)
+                                self.create_noxim_YAML_config(core_it,core_it,use_winoc,i,RA_index=RA_index, num_virtual_channels=VC_index, size_of_flit=size_of_flit, size_of_packet_in_bits=size_of_packet_in_bits, traffic="TRAFFIC_RANDOM", buffer_size=buffer_size)
+                                # Runs the shell command for noxim
+                                if traffic == "HOTSPOT":
+                                    returnedVal=self.run_hotspot()  
+                                else:
+                                    returnedVal=self.run()  
+                                # log returned output from noxim
+                                #print(returnedVal)
+                                self.noxim_log(returnedVal,save_log=True)
 
-                            result=self.get_results(returnedVal)
-                            results.append([core_it,i,RA_index,VC_index,size_of_flit,size_of_packet_in_bits]+result)
-                            self.print_result_list(result)
+                                result=self.get_results(returnedVal)
+                                results.append([core_it,i,RA_index,VC_index,size_of_flit,size_of_packet_in_bits]+result+[buffer_size])
+                                self.print_result_list(result)
 
         results_matrix=np.row_stack(results)
         #save_results(results_matrix,'mesh_dimension,injection_load,throughput,delay')
         self.save_results(results_matrix,'mesh_dimension, injection_load, RA_index, VC_index, size_of_flit, size_of_packet_in_bits, total_received_packets, total_received_flits, received_flits_ratio, average_wireless_utilization, \
-global_average_delay, max_delay, network_throughput, average_IP_throughput, total_energy, dynamic_energy, static_energy')
+global_average_delay, max_delay, network_throughput, average_IP_throughput, total_energy, dynamic_energy, static_energy, buffer_size')
 
         return results_matrix
 
@@ -464,7 +468,23 @@ global_average_delay, max_delay, network_throughput, average_IP_throughput, tota
 
 
 if __name__=='__main__':
+    """
+    Traffic has to be set as hotspot for part B
+    I think it would be good to have a similar approach to what I've done in part A
+    I.e. have a varying injection load and then for different parameters plot the throughput(BW)/energy vs injection load
+    and compare it with my plots from the part A. I've put them already in the report.
+    """
     pn=Pynoxim('/home/kacper/noxim/noxim/bin', display=False)
+    a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01, 1, 0.01),
+                            mesh_dim_range=[8],
+                            virtual_channel_range=[4],
+                            routing_algorithm_indices_in_list=[0], # Table based and Mortazavi (error) omitted
+                            use_winoc=False, 
+                            flit_size_range=[32],
+                            traffic="HOTSPOT",
+                            buffer_sizes=[2, 4, 8, 16, 32, 64]) # Buffer needs to be a power of 2 (not mentioned anywhere...)
+
+
     """ 
     a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,1,0.01),
                                 mesh_dim_range=[8],
@@ -472,17 +492,9 @@ if __name__=='__main__':
                                 routing_algorithm_indices_in_list=[0],
                                 use_winoc=False, 
                                 flit_size_range=[32],
-                                traffic='TRAFFIC_RANDOM')"""
-    a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,1,0.01),
-                            mesh_dim_range=[8],
-                            virtual_channel_range=[4],
-                            routing_algorithm_indices_in_list=[0],
-                            use_winoc=False, 
-                            flit_size_range=[32],
-                            traffic="HOTSPOT")
+                                traffic='TRAFFIC_RANDOM')
+    """
     #a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,0.3,0.05),mesh_dim_range=[4,6,8,10],virtual_channel_range=[4],\
     #    routing_algorithm_indices_in_list=[0],use_winoc=False, flit_size_range=[32])
     #a=pn.compare_config_pynoxim(injection_load_range=np.arange(0.01,0.3,0.05),mesh_dim_range=[8],virtual_channel_range=[4],\
     #    routing_algorithm_indices_in_list=[0],use_winoc=False, flit_size_range=[16,32,64,128])
-    
- 

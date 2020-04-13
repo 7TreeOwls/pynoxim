@@ -25,7 +25,8 @@ NAME_TO_IX = {
     "average_IP_throughput": 13,
     "total_energy": 14,
     "dynamic_energy": 15,
-    "static_energy": 16
+    "static_energy": 16,
+    "buffer_size": 17
 }
 
 
@@ -161,37 +162,205 @@ def plot_hotspots(path: List, ms: int):
     f=plt.figure()
     ax=f.add_subplot(111)
     ax.plot(data_noxim_05[:,NAME_TO_IX["injection_load"]],
-            data_noxim_05[:,NAME_TO_IX["network_throughput"]],
+            data_noxim_05[:,NAME_TO_IX["global_average_delay"]],
             'o', 
             markersize=ms, 
             fillstyle='none',
             color='green',
             label="Hotspot 5% traffic")
     ax.plot(data_noxim_15[:,NAME_TO_IX["injection_load"]],
-            data_noxim_15[:,NAME_TO_IX["network_throughput"]],
+            data_noxim_15[:,NAME_TO_IX["global_average_delay"]],
             'o', 
             markersize=ms, 
             fillstyle='none',
             color="blue",
             label="Hotspot 7.5% traffic")
     ax.plot(data_noxim_25[:,NAME_TO_IX["injection_load"]],
-            data_noxim_25[:,NAME_TO_IX["network_throughput"]],
+            data_noxim_25[:,NAME_TO_IX["global_average_delay"]],
             'o', 
             markersize=ms, 
             fillstyle='none',
             color="red",
             label="Hotspot 10% traffic")
     ax.legend()
-    ax.set_ylabel("Network throughput (flits/Cycle)")
+    ax.set_ylabel("Average Delay (Cycles)")
     ax.set_xlabel("Injection Load (filt/IP/Cycles)")
-    ax.set_title("Injection load vs Network throughput")
+    ax.set_title("Injection load vs Average Delay")
     ax.grid(True)
-    f.savefig("injection_load_throughput_hotspots.png")
+    f.savefig("injection_load_delay_hotspots.png")
     plt.clf()
 
+def plot_routing_algs(csv_name, ms):
+    RA_list = [
+        "XY",
+        "WEST_FIRST",
+        "NORTH_LAST",
+        "NEGATIVE_FIRST",
+        "ODD_EVEN",
+        "DYAD",
+    ]
+    color_list = [
+        "blue",
+        "green",
+        "red",
+        "yellow",
+        "brown",
+        "purple"
+    ]
+    data = np.genfromtxt(csv_name, delimiter=',')
+    f=plt.figure()
+    ax=f.add_subplot(111)
+    for i, RA in enumerate(RA_list):
+        # i is equivalent to the RA index
+        b = find_rows_of_results(data, NAME_TO_IX["ra_ix"], i)
+        ax.plot(
+            b[:,NAME_TO_IX["injection_load"]],
+            b[:,NAME_TO_IX["global_average_delay"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color=color_list[i],
+            label=RA
+            )
+    ax.legend()
+    ax.set_ylabel("Average Delay (Cycles)")
+    ax.set_xlabel("Injection Load (filt/IP/Cycles)")
+    ax.set_title("Injection load vs Average Delay for different routing algorithms")
+    ax.grid(True)
+    f.savefig("injection_load_delay_hotspots_ras.png")
+    plt.clf()
+
+    f=plt.figure()
+    ax=f.add_subplot(111)
+    for i, RA in enumerate(RA_list):
+        # i is equivalent to the RA index
+        b = find_rows_of_results(data, NAME_TO_IX["ra_ix"], i)
+        ax.plot(
+            b[:,NAME_TO_IX["injection_load"]],
+            b[:,NAME_TO_IX["network_throughput"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color=color_list[i],
+            label=RA
+            )
+    ax.legend()
+    ax.set_ylabel("Network throughput (flits/Cycle)")
+    ax.set_xlabel("Injection Load (filt/IP/Cycles)")
+    ax.set_title("Injection load vs Network throughput with different routing algorithms")  
+    ax.grid(True)
+    f.savefig("injection_load_throughput_hotspots_ras.png")
+    plt.clf()
+
+    f=plt.figure()
+    ax=f.add_subplot(111)
+    for i, RA in enumerate(RA_list):
+        # i is equivalent to the RA index
+        b = find_rows_of_results(data, NAME_TO_IX["ra_ix"], i)
+        ax.plot(
+            b[:,NAME_TO_IX["injection_load"]],
+            b[:,NAME_TO_IX["total_energy"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color=color_list[i],
+            label=RA
+            )
+    ax.legend()
+    ax.set_ylabel("Total Energy (J)")
+    ax.set_xlabel("Injection Load (filt/IP/Cycles)")
+    ax.set_title("Injection load vs Total Energy with different routing algorithms")  
+    ax.grid(True)
+    f.savefig("injection_load_totenergy_hotspots_ras.png")
+    plt.clf()
+
+def plot_buffer_sizes(csv_name, ms):
+    buffer_sizes=[2, 4, 8, 16, 32, 64]
+    color_list = [
+        "blue",
+        "green",
+        "red",
+        "yellow",
+        "brown",
+        "purple"
+    ]
+    data = np.genfromtxt(csv_name, delimiter=',')
+    f=plt.figure()
+    ax=f.add_subplot(111)
+    for i, RA in enumerate(RA_list):
+        # i is equivalent to the RA index
+        b = find_rows_of_results(data, , i)
+        ax.plot(
+            b[:,NAME_TO_IX["injection_load"]],
+            b[:,NAME_TO_IX["global_average_delay"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color=color_list[i],
+            label=RA
+            )
+    ax.legend()
+    ax.set_ylabel("Average Delay (Cycles)")
+    ax.set_xlabel("Injection Load (filt/IP/Cycles)")
+    ax.set_title("Injection load vs Average Delay for different routing algorithms")
+    ax.grid(True)
+    f.savefig("injection_load_delay_hotspots_ras.png")
+    plt.clf()
+
+    f=plt.figure()
+    ax=f.add_subplot(111)
+    for i, RA in enumerate(RA_list):
+        # i is equivalent to the RA index
+        b = find_rows_of_results(data, NAME_TO_IX["ra_ix"], i)
+        ax.plot(
+            b[:,NAME_TO_IX["injection_load"]],
+            b[:,NAME_TO_IX["network_throughput"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color=color_list[i],
+            label=RA
+            )
+    ax.legend()
+    ax.set_ylabel("Network throughput (flits/Cycle)")
+    ax.set_xlabel("Injection Load (filt/IP/Cycles)")
+    ax.set_title("Injection load vs Network throughput with different routing algorithms")  
+    ax.grid(True)
+    f.savefig("injection_load_throughput_hotspots_ras.png")
+    plt.clf()
+
+    f=plt.figure()
+    ax=f.add_subplot(111)
+    for i, RA in enumerate(RA_list):
+        # i is equivalent to the RA index
+        b = find_rows_of_results(data, NAME_TO_IX["ra_ix"], i)
+        ax.plot(
+            b[:,NAME_TO_IX["injection_load"]],
+            b[:,NAME_TO_IX["total_energy"]],
+            'o', 
+            markersize=ms, 
+            fillstyle='none',
+            color=color_list[i],
+            label=RA
+            )
+    ax.legend()
+    ax.set_ylabel("Total Energy (J)")
+    ax.set_xlabel("Injection Load (filt/IP/Cycles)")
+    ax.set_title("Injection load vs Total Energy with different routing algorithms")  
+    ax.grid(True)
+    f.savefig("injection_load_totenergy_hotspots_ras.png")
+    plt.clf()
 
 if __name__=="__main__":
-    ms=6
+    ms=2
+    csv_name = "ra_sweep.csv"
+    plot_routing_algs(csv_name, ms)
+    plot_buffer_sizes(csv_name_buff, ms)
+    buffer_sizes=[2, 4, 8, 16, 32, 64]
+    # For Part B
+
+    """ 
+    # For Part A
     csv_name = "injection_load_sweep.csv"
     csv_name_hotspots = ["hotspot_0.05.csv",  "hotspot_0.075.csv",  "hotspot_0.1.csv"]
     # Delay vs Injection load
@@ -209,3 +378,4 @@ if __name__=="__main__":
     plot_energy(csv_name, ms)
 
     plot_hotspots(csv_name_hotspots, ms)
+    """
